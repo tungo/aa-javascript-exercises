@@ -1,34 +1,32 @@
-const readline = require("readline");
-
-const reader = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
 class Game {
-  constructor() {
+  constructor(reader) {
     this.towers = [[3, 2, 1], [], []];
+    this.reader = reader;
   }
 
-  run() {
-    // until stack is moved to position 1 or 2
-      // ask user from move
-      // ask user to move
-      // check for valid move
-      // move the piece
+  run(completionCallback) {
+    this.promtMove((start, end) => {
+      if (!this.move(start, end)) {
+        console.log('Invalid move!');
+      }
+      if (this.isWon()) {
+        return completionCallback();
+      }
+      this.run(completionCallback);
+    });
   }
 
   promtMove(callback) {
-    console.log(this.towers);
+    this.print();
 
     let startTowerIdx;
     let endTowerIdx;
 
-    reader.question("Where do you want to move from", (from) => {
+    this.reader.question("Where do you want to move from", (from) => {
       startTowerIdx = parseInt(from);
-      reader.question("Where do you want to move to", (to) => {
+      this.reader.question("Where do you want to move to", (to) => {
         endTowerIdx = parseInt(to);
-        callback(startTowerIdx, endTowerIdx);
+        return callback(startTowerIdx, endTowerIdx);
       });
     });
   }
@@ -51,13 +49,38 @@ class Game {
     }
     return true;
   }
+
+  move(startTowerIdx, endTowerIdx) {
+    if (this.isValidMove(startTowerIdx, endTowerIdx)) {
+      this.towers[endTowerIdx].push(this.towers[startTowerIdx].pop());
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  print() {
+    console.log(JSON.stringify(this.towers));
+  }
+
+  isWon() {
+    let tower1Complete = true;
+    let tower2Complete = true;
+    for (let i = 0; i < 3; i++) {
+      if (this.towers[1][i] !== 3 - i) {
+        tower1Complete = false;
+      }
+      if (this.towers[2][i] !== 3 - i) {
+        tower2Complete = false;
+      }
+    }
+    if (tower1Complete || tower2Complete) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 
-// let game = new Game();
-// // game.promtMove((start, end) => console.log(start + " " + end));
-// console.log(game.isValidMove(2,0));
-// console.log(game.isValidMove(-1,10));
-// console.log(game.isValidMove(0,1));
-// console.log(game.isValidMove(2,2));
-// console.log(game.isValidMove(0,0));
+module.exports = Game;
