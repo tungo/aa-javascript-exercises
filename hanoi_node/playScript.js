@@ -6,8 +6,18 @@ const reader = readline.createInterface({
   output: process.stdout
 });
 
-let game = new Hanoi(reader);
-game.run(() => {
+function completionCallback() {
   console.log('Congrats, you win!');
-  reader.close();
-});
+  reader.question('Want to play again?', (answer) => {
+    if (answer === 'yes') {
+      game = new Hanoi(reader);
+      game.run(completionCallback);
+    }
+    else {
+      reader.close();
+    }
+  });
+}
+
+let game = new Hanoi(reader);
+game.run(completionCallback);
